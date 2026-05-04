@@ -1,24 +1,44 @@
 const mineflayer = require('mineflayer')
 
 const bot = mineflayer.createBot({
-  host: 'recsdinousR.aternos.me.aternos.me', // Put your server IP here
-  port: 60462,                      // Put your port here (usually 5 digits)
-  username: 'AFK_Bot',              // The name the bot will use
-  version: false                    // Auto-detects version
+  host: 'whitebait.aternos.host', // Use the Dyn IP from your screenshot
+  port: 60462,                   // Use the Port from your screenshot
+  username: 'AFK_Bot',
+  version: false
 })
 
-// Log messages when the bot joins
 bot.on('spawn', () => {
-  console.log('Bot has joined the server!')
+  console.log('Bot joined! Starting anti-AFK routines...')
+  
+  // Randomly jump, sneak, and look around every 15-30 seconds
+  setInterval(() => {
+    const actions = ['jump', 'sneak', 'look']
+    const randomAction = actions[Math.floor(Math.random() * actions.length)]
+    
+    if (randomAction === 'jump') {
+      bot.setControlState('jump', true)
+      setTimeout(() => bot.setControlState('jump', false), 500)
+    } else if (randomAction === 'sneak') {
+      bot.setControlState('sneak', true)
+      setTimeout(() => bot.setControlState('sneak', false), 2000)
+    } else if (randomAction === 'look') {
+      const yaw = Math.random() * Math.PI * 2
+      const pitch = (Math.random() - 0.5) * Math.PI
+      bot.look(yaw, pitch)
+    }
+  }, Math.floor(Math.random() * 15000) + 15000)
 })
 
-// This part reconnects the bot if it gets kicked
+bot.on('chat', (username, message) => {
+  if (username === bot.username) return
+  if (message === 'hello') {
+    bot.chat('I am definitely not a bot!')
+  }
+})
+
 bot.on('end', () => {
-  console.log('Disconnected. Attempting to reconnect...')
-  setTimeout(() => {
-    process.exit() // Render will automatically restart the process
-  }, 5000)
+  console.log('Disconnected. Restarting...')
+  process.exit() 
 })
 
-// Basic error handling
-bot.on('error', err => console.log(err))
+bot.on('error', (err) => console.log('Error:', err))
